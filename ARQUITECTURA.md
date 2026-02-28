@@ -593,3 +593,4 @@ practica_ci_cd/
 - [Documentación de workflows CI/CD](docs/ci-cd/)
 - [Guía de uso detallada](GUIA_USO.md)
 - [README principal](README.md)
+
