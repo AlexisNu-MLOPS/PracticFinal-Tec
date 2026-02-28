@@ -10,8 +10,8 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: practica-ci-cd
-  S3_INPUT: s3://practica.mlops.2026/ejemplo.studio/
-  S3_OUTPUT: s3://practica.mlops.2026/ejemplo.studio/processed/
+  S3_INPUT: s3://practica.mlops.2026.ejemplo.studio/
+  S3_OUTPUT: s3://practica.mlops.2026.ejemplo.studio/processed/
 
 jobs:
   run-processing-job:
