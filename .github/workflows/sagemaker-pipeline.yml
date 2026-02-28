@@ -12,7 +12,6 @@ env:
   ECR_REPOSITORY: practica-ci-cd
   S3_INPUT: s3://practica.mlops.2026/ejemplo.studio/
   S3_OUTPUT: s3://practica.mlops.2026/ejemplo.studio/processed/
-  SAGEMAKER_ROLE_ARN: arn:aws:iam::421041021233:role/sagemaker-execution-practica-ci-cd
 
 jobs:
   run-processing-job:
@@ -41,6 +40,13 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+
+      - name: Get AWS Account ID
+        id: aws-account
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
+          echo "SAGEMAKER_ROLE_ARN=arn:aws:iam::$ACCOUNT_ID:role/sagemaker-execution-${{ env.ECR_REPOSITORY }}" >> $GITHUB_ENV
 
       - name: Install boto3
         run: pip install boto3
