@@ -53,15 +53,34 @@ jobs:
             --input-s3 ${{ env.S3_INPUT }} \
             --output-s3 ${{ env.S3_OUTPUT }} \
             --instance-type ml.t3.medium
+            
+      - name: Launch SageMaker Training Job
+        id: training
+        run: |
+          python scripts/launch_training_job.py \
+            --image ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:train-latest \
+            --role ${{ env.SAGEMAKER_ROLE_ARN }} \
+            --input-s3 ${{ env.S3_OUTPUT }} \
+            --output-s3 s3://practica.mlops.2026/ejemplo.studio/model/ \
+            --instance-type ml.m5.large
 
       - name: Create summary
         if: always()
         run: |
-          echo "## SageMaker Processing Job 🔬" >> $GITHUB_STEP_SUMMARY
+          echo "## SageMaker Pipeline Execution 🚀" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Processing Job 🔬" >> $GITHUB_STEP_SUMMARY
           echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
           echo "| Image | \`${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:processing-latest\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Input S3  | \`${{ env.S3_INPUT }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Output S3 | \`${{ env.S3_OUTPUT }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Instance  | \`ml.t3.medium\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Training Job 🧠" >> $GITHUB_STEP_SUMMARY
+          echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | \`${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:train-latest\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Input S3  | \`${{ env.S3_OUTPUT }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Output S3 | \`s3://practica.mlops.2026/ejemplo.studio/model/\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Instance  | \`ml.m5.large\` |" >> $GITHUB_STEP_SUMMARY

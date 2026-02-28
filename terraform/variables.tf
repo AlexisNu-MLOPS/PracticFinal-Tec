@@ -15,3 +15,9 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+variable "s3_bucket_name" {
+  description = "Nombre del bucket S3 para datos de MLOps"
+  type        = string
+  default     = "practica.mlops.2026.ejemplo.studio"
+}

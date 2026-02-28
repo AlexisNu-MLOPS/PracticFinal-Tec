@@ -32,25 +32,46 @@ def train_model(model_type='random_forest', val_split=0.2, cv_folds=5):
     print("TITANIC SURVIVAL PREDICTION - TRAINING")
     print("=" * 50)
     
-    # Load data
     print("\n1. Loading data...")
-    train_df, test_df = load_titanic_data()
-    print(f"   ✓ Loaded {len(train_df)} training samples")
-    if test_df is not None:
-        print(f"   ✓ Loaded {len(test_df)} test samples")
     
-    # Preprocess data
-    print("\n2. Preprocessing data...")
-    processed = preprocess_data(train_df, test_df, val_split=val_split)
-    X_train = processed['X_train']
-    y_train = processed['y_train']
-    X_val = processed['X_val']
-    y_val = processed['y_val']
-    
-    print(f"   ✓ Training set: {X_train.shape}")
-    if X_val is not None:
-        print(f"   ✓ Validation set: {X_val.shape}")
-    print(f"   ✓ Features: {X_train.shape[1]}")
+    # Check if running in SageMaker
+    sagemaker_train_path = Path("/opt/ml/input/data/train")
+    if sagemaker_train_path.exists():
+        print("   Running in SageMaker environment. Loading processed data...")
+        import pandas as pd
+        X_train = pd.read_csv(sagemaker_train_path / "train.csv")
+        y_train = X_train.pop("Survived")
+        
+        X_val = None
+        y_val = None
+        val_path = sagemaker_train_path / "validation.csv"
+        if val_path.exists():
+            X_val = pd.read_csv(val_path)
+            y_val = X_val.pop("Survived")
+            
+        print(f"   ✓ Training set: {X_train.shape}")
+        if X_val is not None:
+            print(f"   ✓ Validation set: {X_val.shape}")
+        print(f"   ✓ Features: {X_train.shape[1]}")
+    else:
+        # Local execution: load and preprocess raw data
+        train_df, test_df = load_titanic_data()
+        print(f"   ✓ Loaded {len(train_df)} training samples")
+        if test_df is not None:
+            print(f"   ✓ Loaded {len(test_df)} test samples")
+        
+        # Preprocess data
+        print("\n2. Preprocessing data...")
+        processed = preprocess_data(train_df, test_df, val_split=val_split)
+        X_train = processed['X_train']
+        y_train = processed['y_train']
+        X_val = processed['X_val']
+        y_val = processed['y_val']
+        
+        print(f"   ✓ Training set: {X_train.shape}")
+        if X_val is not None:
+            print(f"   ✓ Validation set: {X_val.shape}")
+        print(f"   ✓ Features: {X_train.shape[1]}")
     
     # Create model
     print(f"\n3. Creating model ({model_type})...")

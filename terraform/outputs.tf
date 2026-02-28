@@ -28,3 +28,8 @@ output "aws_secret_access_key" {
   value       = aws_iam_access_key.github_actions.secret
   sensitive   = true
 }
+
+output "s3_bucket_name" {
+  description = "Nombre del bucket S3 de MLOps creado"
+  value       = aws_s3_bucket.mlops_data.bucket
+}
