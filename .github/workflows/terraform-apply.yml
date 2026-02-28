@@ -144,6 +144,26 @@ jobs:
               terraform import aws_s3_bucket.mlops_data practica.mlops.2026.ejemplo.studio || terraform import aws_s3_bucket.mlops_data practica.mlops.2026 || true
            fi
         fi
+        if ! terraform state list | grep -q 'aws_iam_user.github_actions$'; then
+           if aws iam get-user --user-name github-actions-ecr-practica-ci-cd 2>/dev/null; then
+              terraform import aws_iam_user.github_actions github-actions-ecr-practica-ci-cd || true
+           fi
+        fi
+        if ! terraform state list | grep -q 'aws_iam_role.sagemaker_execution$'; then
+           if aws iam get-role --role-name sagemaker-execution-practica-ci-cd 2>/dev/null; then
+              terraform import aws_iam_role.sagemaker_execution sagemaker-execution-practica-ci-cd || true
+           fi
+        fi
+        if ! terraform state list | grep -q 'aws_iam_user.github_actions$'; then
+           if aws iam get-user --user-name github-actions-ecr-practica-ci-cd 2>/dev/null; then
+              terraform import aws_iam_user.github_actions github-actions-ecr-practica-ci-cd || true
+           fi
+        fi
+        if ! terraform state list | grep -q 'aws_iam_role.sagemaker_execution$'; then
+           if aws iam get-role --role-name sagemaker-execution-practica-ci-cd 2>/dev/null; then
+              terraform import aws_iam_role.sagemaker_execution sagemaker-execution-practica-ci-cd || true
+           fi
+        fi
 
     - name: Terraform Apply
       working-directory: ./terraform
