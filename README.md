@@ -13,6 +13,9 @@ Proyecto completo de Machine Learning para predecir la supervivencia de pasajero
 > [!NOTE]
 > **🎯 Proyecto académico de práctica**: Este repositorio fue creado como ejercicio práctico para aprender CI/CD, testing y mejores prácticas en proyectos de Machine Learning.
 
+
+
+
 ## 📑 Tabla de Contenidos
 
 - [Características](#-características)
