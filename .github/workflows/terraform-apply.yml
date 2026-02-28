@@ -120,6 +120,31 @@ jobs:
         name: tfplan
         path: terraform/
         
+    - name: Download Plan
+      uses: actions/download-artifact@v4
+      with:
+        name: tfplan
+        path: terraform/
+        
+    - name: Import Existing Resources To State
+      working-directory: ./terraform
+      run: |
+        if ! terraform state list | grep -q 'aws_ecr_repository.ml_repo$'; then
+           if aws ecr describe-repositories --repository-names practica-ci-cd 2>/dev/null; then
+              terraform import aws_ecr_repository.ml_repo practica-ci-cd || true
+           fi
+        fi
+        if ! terraform state list | grep -q 'aws_ecr_repository.ml_repo_train$'; then
+           if aws ecr describe-repositories --repository-names practica-ci-cd-train 2>/dev/null; then
+              terraform import aws_ecr_repository.ml_repo_train practica-ci-cd-train || true
+           fi
+        fi
+        if ! terraform state list | grep -q 'aws_s3_bucket.mlops_data$'; then
+           if aws s3api head-bucket --bucket practica.mlops.2026.ejemplo.studio 2>/dev/null || aws s3api head-bucket --bucket practica.mlops.2026 2>/dev/null; then
+              terraform import aws_s3_bucket.mlops_data practica.mlops.2026.ejemplo.studio || terraform import aws_s3_bucket.mlops_data practica.mlops.2026 || true
+           fi
+        fi
+
     - name: Terraform Apply
       working-directory: ./terraform
       run: terraform apply -auto-approve tfplan
