@@ -48,8 +48,17 @@ jobs:
           echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
           echo "SAGEMAKER_ROLE_ARN=arn:aws:iam::$ACCOUNT_ID:role/sagemaker-execution-${{ env.ECR_REPOSITORY }}" >> $GITHUB_ENV
 
-      - name: Install boto3
-        run: pip install boto3
+      - name: Install dependencies
+        run: pip install boto3 pandas seaborn
+
+      - name: Prepare and Upload Dataset to S3
+        run: |
+          # Descarga los datos localmente a data/raw/ usando el script del proyecto
+          python scripts/download_data.py
+          
+          # Sube los archivos particionados al Bucket S3 en la ruta de Input
+          aws s3 cp data/raw/train.csv ${{ env.S3_INPUT }}titanic_train.csv
+          aws s3 cp data/raw/test.csv ${{ env.S3_INPUT }}titanic_test.csv
 
       - name: Launch SageMaker Processing Job
         id: processing
