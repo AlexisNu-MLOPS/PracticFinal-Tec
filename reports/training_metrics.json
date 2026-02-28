@@ -1,0 +1,35 @@
+{
+  "model_type": "random_forest",
+  "train_accuracy": 0.9105263157894737,
+  "val_accuracy": 0.7972027972027972,
+  "cv_accuracy_mean": 0.8122807017543859,
+  "cv_accuracy_std": 0.01789129653892207,
+  "cv_scores": [
+    0.8368421052631579,
+    0.8052631578947368,
+    0.7947368421052632
+  ],
+  "n_features": 18,
+  "n_train_samples": 570,
+  "n_val_samples": 143,
+  "feature_importance": {
+    "Pclass": 0.07285070501055756,
+    "Sex": 0.23005851169256242,
+    "Age": 0.1140274134034316,
+    "SibSp": 0.03700832180033999,
+    "Parch": 0.01872582654574455,
+    "Fare": 0.15504777002030978,
+    "Embarked": 0.0219940247437469,
+    "HasCabin": 0.04813237878036003,
+    "FamilySize": 0.05332763033183593,
+    "IsAlone": 0.016361385535996965,
+    "Title": 0.1576010431484527,
+    "AgeGroup_Teen": 0.0037764179709463713,
+    "AgeGroup_Adult": 0.013102482627786434,
+    "AgeGroup_Middle": 0.01099316801137147,
+    "AgeGroup_Senior": 0.0038436827678586544,
+    "FareGroup_Medium": 0.010505260128149372,
+    "FareGroup_High": 0.010617790136902963,
+    "FareGroup_VeryHigh": 0.02202618734364622
+  }
+}

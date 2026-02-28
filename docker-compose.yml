@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # Development environment
+  dev:
+    build:
+      context: .
+      target: development
+    image: titanic-ml:dev
+    container_name: titanic-ml-dev
+    volumes:
+      - .:/app
+      - titanic-data:/app/data
+      - titanic-models:/app/models
+      - titanic-reports:/app/reports
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: bash
+    stdin_open: true
+    tty: true
+
+  # Training service
+  train:
+    build:
+      context: .
+      target: train
+    image: titanic-ml:train
+    container_name: titanic-ml-train
+    volumes:
+      - titanic-models:/app/models
+      - titanic-reports:/app/reports
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  # Evaluation service
+  evaluate:
+    build:
+      context: .
+      target: production
+    image: titanic-ml:prod
+    container_name: titanic-ml-evaluate
+    volumes:
+      - titanic-models:/app/models
+      - titanic-reports:/app/reports
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - train
+
+  # Testing service
+  test:
+    build:
+      context: .
+      target: development
+    image: titanic-ml:test
+    container_name: titanic-ml-test
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: pytest tests/ -v --cov=src --cov-report=html
+
+volumes:
+  titanic-data:
+    name: titanic_ml_data
+  titanic-models:
+    name: titanic_ml_models
+  titanic-reports:
+    name: titanic_ml_reports

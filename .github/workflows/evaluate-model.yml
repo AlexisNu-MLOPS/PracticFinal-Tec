@@ -1,0 +1,113 @@
+name: Evaluate Model
+
+on:
+  workflow_run:
+    workflows: ["Train Model"]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      model_filename:
+        description: 'Model filename to evaluate'
+        required: true
+        default: 'titanic_model_random_forest.pkl'
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Download Titanic dataset
+      run: |
+        python scripts/download_data.py
+    
+    - name: Download trained model
+      if: github.event_name == 'workflow_run'
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        workflow: train-model.yml
+        workflow_conclusion: success
+        name: trained-model
+        path: .
+        check_artifacts: true
+    
+    - name: Evaluate model
+      run: |
+        MODEL_FILE="${{ github.event.inputs.model_filename || 'titanic_model_random_forest.pkl' }}"
+        python src/evaluate.py --model $MODEL_FILE --use-test
+    
+    - name: Upload evaluation results
+      uses: actions/upload-artifact@v4
+      with:
+        name: evaluation-results
+        path: |
+          reports/evaluation_results.json
+          reports/*.png
+        retention-days: 30
+    
+    - name: Display evaluation results
+      run: |
+        echo "Evaluation completed successfully!"
+        if [ -f reports/evaluation_results.json ]; then
+          echo "Evaluation Results:"
+          cat reports/evaluation_results.json
+        fi
+    
+    - name: Create evaluation summary
+      if: always()
+      run: |
+        echo "## Evaluation Summary 📊" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ -f reports/evaluation_results.json ]; then
+          echo "### Metrics" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          cat reports/evaluation_results.json >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ Evaluation results not found" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: Comment on PR (if applicable)
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          if (fs.existsSync('reports/evaluation_results.json')) {
+            const results = JSON.parse(fs.readFileSync('reports/evaluation_results.json', 'utf8'));
+            const body = `## Model Evaluation Results 📊\n\n` +
+              `- **Accuracy**: ${results.metrics.accuracy.toFixed(4)}\n` +
+              `- **Precision**: ${results.metrics.precision.toFixed(4)}\n` +
+              `- **Recall**: ${results.metrics.recall.toFixed(4)}\n` +
+              `- **F1 Score**: ${results.metrics.f1_score.toFixed(4)}\n` +
+              `- **ROC-AUC**: ${results.metrics.roc_auc ? results.metrics.roc_auc.toFixed(4) : 'N/A'}\n`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+          }

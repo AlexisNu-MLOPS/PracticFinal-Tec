@@ -1,0 +1,109 @@
+name: Docker Build and Publish to ECR
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: practica-ci-cd
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS Credentials
+        if: github.event_name != 'pull_request'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        if: github.event_name != 'pull_request'
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ── Short SHA for immutable tags ─────────────────────────────────────
+      - name: Set image tag variables
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      # ── Processing image ──────────────────────────────────────────────────
+      - name: Build and push Processing image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: processing
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:processing-latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:processing-${{ steps.vars.outputs.sha_short }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── Training image ────────────────────────────────────────────────────
+      - name: Build and push Training image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: train
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:train-latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:train-${{ steps.vars.outputs.sha_short }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── Production image (only on version tags) ───────────────────────────
+      - name: Build and push Production image
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: production
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:prod-${{ github.ref_name }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:prod-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── Summary ───────────────────────────────────────────────────────────
+      - name: Create summary
+        if: always()
+        run: |
+          REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+          REPO="${{ env.ECR_REPOSITORY }}"
+          SHA="${{ steps.vars.outputs.sha_short }}"
+          echo "## Docker Build Summary 🐳" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | Tag |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Processing | \`${REGISTRY}/${REPO}:processing-latest\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Processing | \`${REGISTRY}/${REPO}:processing-${SHA}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Training   | \`${REGISTRY}/${REPO}:train-latest\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Training   | \`${REGISTRY}/${REPO}:train-${SHA}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Pull commands" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${REGISTRY}/${REPO}:processing-latest" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${REGISTRY}/${REPO}:train-latest" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

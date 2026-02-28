@@ -1,0 +1,10 @@
+# Directorio de plugins descargados por terraform init
+.terraform/
+
+# Archivos de estado (contienen info sensible)
+terraform.tfstate
+terraform.tfstate.backup
+
+# Variables locales con secretos
+*.tfvars
+!example.tfvars

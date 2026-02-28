@@ -1,0 +1,80 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Documentation
+docs/_build/
+*.md
+!README.md
+
+# GitHub
+.github/
+.gemini/
+
+# Data (will be downloaded in container)
+# Uncomment if you want to exclude data from image
+# data/raw/*
+# data/processed/*
+
+# Models (will be trained in container)
+# Uncomment if you want to exclude models from image
+# models/*.pkl
+# models/*.joblib
+
+# Reports
+reports/*.png
+reports/*.json
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp

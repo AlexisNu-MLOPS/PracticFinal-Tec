@@ -1,0 +1,50 @@
+{
+  "model_filename": "titanic_model_random_forest.pkl",
+  "evaluation_set": "Test",
+  "n_samples": 178,
+  "n_features": 18,
+  "metrics": {
+    "accuracy": 0.8426966292134831,
+    "precision": 0.8032786885245902,
+    "recall": 0.7538461538461538,
+    "f1_score": 0.7777777777777778,
+    "roc_auc": 0.8739278420694351
+  },
+  "confusion_matrix": [
+    [
+      101,
+      12
+    ],
+    [
+      16,
+      49
+    ]
+  ],
+  "classification_report": {
+    "0": {
+      "precision": 0.8632478632478633,
+      "recall": 0.8938053097345132,
+      "f1-score": 0.8782608695652174,
+      "support": 113.0
+    },
+    "1": {
+      "precision": 0.8032786885245902,
+      "recall": 0.7538461538461538,
+      "f1-score": 0.7777777777777778,
+      "support": 65.0
+    },
+    "accuracy": 0.8426966292134831,
+    "macro avg": {
+      "precision": 0.8332632758862267,
+      "recall": 0.8238257317903335,
+      "f1-score": 0.8280193236714977,
+      "support": 178.0
+    },
+    "weighted avg": {
+      "precision": 0.8413490073095894,
+      "recall": 0.8426966292134831,
+      "f1-score": 0.8415676057102535,
+      "support": 178.0
+    }
+  }
+}
