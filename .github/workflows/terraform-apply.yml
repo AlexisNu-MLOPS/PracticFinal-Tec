@@ -34,9 +34,38 @@ jobs:
       with:
         terraform_version: 1.5.0
     
+    - name: Setup Terraform State Bucket
+      run: |
+        ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+        BUCKET_NAME="tf-state-practica-${ACCOUNT_ID}"
+        echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
+        if ! aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+          echo "Creating state bucket $BUCKET_NAME"
+          aws s3 mb "s3://$BUCKET_NAME" --region ${{ env.AWS_REGION }}
+        fi
+
     - name: Terraform Init
       working-directory: ./terraform
-      run: terraform init
+      run: terraform init -backend-config="bucket=${{ env.BUCKET_NAME }}" -backend-config="key=terraform.tfstate" -backend-config="region=${{ env.AWS_REGION }}"
+
+    - name: Import Existing Resources To State
+      working-directory: ./terraform
+      run: |
+        if ! terraform state list | grep -q 'aws_ecr_repository.ml_repo$'; then
+           if aws ecr describe-repositories --repository-names practica-ci-cd 2>/dev/null; then
+              terraform import aws_ecr_repository.ml_repo practica-ci-cd || true
+           fi
+        fi
+        if ! terraform state list | grep -q 'aws_ecr_repository.ml_repo_train$'; then
+           if aws ecr describe-repositories --repository-names practica-ci-cd-train 2>/dev/null; then
+              terraform import aws_ecr_repository.ml_repo_train practica-ci-cd-train || true
+           fi
+        fi
+        if ! terraform state list | grep -q 'aws_s3_bucket.mlops_data$'; then
+           if aws s3api head-bucket --bucket practica.mlops.2026 2>/dev/null; then
+              terraform import aws_s3_bucket.mlops_data practica.mlops.2026 || true
+           fi
+        fi
     
     - name: Terraform Format
       working-directory: ./terraform
@@ -76,9 +105,14 @@ jobs:
       with:
         terraform_version: 1.5.0
         
+    - name: Get State Bucket Name
+      run: |
+        ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+        echo "BUCKET_NAME=tf-state-practica-${ACCOUNT_ID}" >> $GITHUB_ENV
+
     - name: Terraform Init
       working-directory: ./terraform
-      run: terraform init
+      run: terraform init -backend-config="bucket=${{ env.BUCKET_NAME }}" -backend-config="key=terraform.tfstate" -backend-config="region=${{ env.AWS_REGION }}"
 
     - name: Download Plan
       uses: actions/download-artifact@v4
