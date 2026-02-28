@@ -10,6 +10,15 @@ from pathlib import Path
 
 def get_model_path():
     """Get path for saving/loading models."""
+    import os
+    if os.environ.get('SM_MODEL_DIR'):
+        return Path(os.environ['SM_MODEL_DIR'])
+        
+    # Check if running in SageMaker
+    sagemaker_train_path = Path("/opt/ml/input/data/train")
+    if sagemaker_train_path.exists():
+        return Path("/opt/ml/model")
+        
     project_root = Path(__file__).parent.parent
     model_path = project_root / 'models'
     model_path.mkdir(parents=True, exist_ok=True)

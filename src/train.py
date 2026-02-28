@@ -130,9 +130,13 @@ def train_model(model_type='random_forest', val_split=0.2, cv_folds=5):
     }
     
     # Save metrics to file
-    project_root = Path(__file__).parent.parent
-    reports_path = project_root / 'reports'
-    reports_path.mkdir(parents=True, exist_ok=True)
+    import os
+    if os.environ.get('SM_MODEL_DIR') or sagemaker_train_path.exists():
+        reports_path = Path(os.environ.get('SM_MODEL_DIR', '/opt/ml/model'))
+    else:
+        project_root = Path(__file__).parent.parent
+        reports_path = project_root / 'reports'
+        reports_path.mkdir(parents=True, exist_ok=True)
     
     metrics_file = reports_path / 'training_metrics.json'
     with open(metrics_file, 'w') as f:
