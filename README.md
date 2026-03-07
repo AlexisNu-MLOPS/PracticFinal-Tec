@@ -1,4 +1,4 @@
-# � Equipo 3
+# Equipo 3
 
 | Integrante | GitHub |
 |---|---|
@@ -7,7 +7,7 @@
 
 ---
 
-# �🚢 Proyecto Titanic ML — Pipeline MLOps End-to-End
+# 🚢 Proyecto Titanic ML — Pipeline MLOps End-to-End
 
 [![Python](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3%2B-orange.svg)](https://scikit-learn.org/)
@@ -38,7 +38,14 @@ Proyecto completo de Machine Learning para predecir la supervivencia de pasajero
 
 ---
 
-## 🏗️ Arquitectura del Pipeline
+## 🏗️ Arquitectura 
+
+
+# Proyecto
+
+![Arquitectura](./docs/img/arquitectura.jpeg)
+
+# Pipeline
 
 ```
 Push a main
