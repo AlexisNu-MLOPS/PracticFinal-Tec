@@ -3,7 +3,7 @@
 | Integrante | GitHub |
 |---|---|
 | **Alexis Nuñez** | [@AlexisNu-MLOPS](https://github.com/AlexisNu-MLOPS) |
-| **Roberto Rivas** | — |
+| **Roberto Rivas** | [@ingrobertorivas](https://github.com/ingrobertorivas) |
 
 ---
 
